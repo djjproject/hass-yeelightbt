@@ -8,6 +8,7 @@ Source  : https://github.com/hcoohb/hass-yeelightbt
 import time  # for delays
 import struct
 import logging
+import os
 from functools import wraps
 
 # 3rd party imports
@@ -46,7 +47,7 @@ MODEL_CANDELA = "Candela"
 _LOGGER = logging.getLogger(__name__)
 
 
-def retry(ExceptionToCheck, tries=3, delay=0.1):
+def retry(ExceptionToCheck, tries=3, delay=1):
     """Retry calling the decorated function.
 
     :param ExceptionToCheck: the exception to check. may be a tuple of exceptions to
@@ -147,8 +148,9 @@ class Lamp:
         for func in self._state_callbacks:
             func()
 
-    @retry(Exception, tries=2)
+    @retry(Exception, tries=64)
     def connect(self):
+        os.system("usb_modeswitch -v 0x8087 -p 0x0aaa --reset-usb; sleep 1; hciconfig hci0 up")
         """Connect to the lamp
         - Create a modified bluepy.btle.Peripheral object (see YeelightPeripheral)
         - Connect to the lamp
